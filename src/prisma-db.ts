@@ -1,15 +1,19 @@
-import { Prisma, PrismaClient } from "@prisma/client/extension";
-import { resolve } from "path";
-const prisma = new PrismaClient();
+import { PrismaClient } from "./generated/prisma/client";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+
+const adapter = new PrismaBetterSqlite3({
+    url: process.env.DATABASE_URL ?? "file:./dev.db",
+});
+const prisma = new PrismaClient({ adapter });
 
 const seedProduct = async ()=>{
     const count = await prisma.product.count();
     if(count ===0){
         await prisma.product.createMany({
             data:[
-            { title: "Product 1", price:500, description: "Description 1"},
-            { title: "Product 2", price:700, description: "Description 2"},
-            { title: "Product 3", price:1000, description: "Description 3"}
+            { title: "Product 1", price:"500", description: "Description 1"},
+            { title: "Product 2", price:"700", description: "Description 2"},
+            { title: "Product 3", price:"1000", description: "Description 3"}
             ],
         });
     }
@@ -36,7 +40,7 @@ description: string
 {
     await new Promise((resolve)=> setTimeout(resolve,1500));
     return prisma.product.create({
-        data: {title,price,description},
+        data: {title,price: String(price),description},
     });
 }
 
@@ -50,7 +54,7 @@ description: string
     await new Promise((resolve)=> setTimeout(resolve,1500));
     return prisma.product.update({
         where: { id },
-        data: {title,price,description},
+        data: {title,price: String(price),description},
     });
 }
 
